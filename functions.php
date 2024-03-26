@@ -242,6 +242,22 @@ add_action('init', 'mroevent_init');
 // MRO Event Custom Post Type End
 
 
+// Register Custom Meta Box
+
+// Hook to add custom meta fields
+function my_custom_meta_fields()
+{
+	register_meta('mroevent', 'event_start_date', array(
+		'type' => 'string',
+		'description' => 'Event Start Date',
+		'single' => true,
+		'show_in_rest' => true,
+	));
+}
+add_action('init', 'my_custom_meta_fields');
+
+
+
 // Register Custom Shortcode
 
 function query_mroevents_shortcode()
@@ -257,12 +273,12 @@ function query_mroevents_shortcode()
 		'post_type'      => 'mroevent', // Custom post type
 		'posts_per_page' => -1, // Retrieve all matching posts
 		'post_status'    => 'publish', // Only retrieve published posts
-		'meta_key'       => 'event_date', // Assuming you store event date in 'event_date' meta field
+		'meta_key'       => 'Event_Date', // Assuming you store event date in 'event_date' meta field
 		'orderby'        => 'meta_value', // Order by the date
 		'order'          => 'ASC', // Ascending order
 		'meta_query'     => array(
 			array(
-				'key'     => 'event_date',
+				'key'     => 'Event_Date',
 				'value'   => $today,
 				'compare' => '>=', // Greater than or equal to today
 				'type'    => 'DATE', // Type of the custom field (date)
@@ -279,7 +295,7 @@ function query_mroevents_shortcode()
 		while ($query->have_posts()) {
 			$query->the_post();
 			// Customize the output
-			$output .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+			$output .= '<li><a href="' . get_permalink() . '">' . get_the_post_thumbnail() . '</a> <a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
 		}
 		$output .= '</ul>';
 	} else {
