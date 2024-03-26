@@ -240,3 +240,57 @@ function mroevent_init()
 }
 add_action('init', 'mroevent_init');
 // MRO Event Custom Post Type End
+
+
+// Register Custom Shortcode
+
+function query_mroevents_shortcode()
+{
+	// Set timezone based on your WordPress settings
+	date_default_timezone_set(get_option('timezone_string'));
+
+	// Get current date in 'Y-m-d' format
+	$today = date('Y-m-d');
+
+	// WP_Query arguments to get 'mroevent' posts from today onwards
+	$args = array(
+		'post_type'      => 'mroevent', // Custom post type
+		'posts_per_page' => -1, // Retrieve all matching posts
+		'post_status'    => 'publish', // Only retrieve published posts
+		'meta_key'       => 'event_date', // Assuming you store event date in 'event_date' meta field
+		'orderby'        => 'meta_value', // Order by the date
+		'order'          => 'ASC', // Ascending order
+		'meta_query'     => array(
+			array(
+				'key'     => 'event_date',
+				'value'   => $today,
+				'compare' => '>=', // Greater than or equal to today
+				'type'    => 'DATE', // Type of the custom field (date)
+			),
+		),
+	);
+
+	// The Query
+	$query = new WP_Query($args);
+
+	// Check if the query returns any posts
+	if ($query->have_posts()) {
+		$output = '<ul>';
+		while ($query->have_posts()) {
+			$query->the_post();
+			// Customize the output
+			$output .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+		}
+		$output .= '</ul>';
+	} else {
+		// No posts found
+		$output = '<p>No upcoming events found.</p>';
+	}
+
+	// Restore original Post Data
+	wp_reset_postdata();
+
+	return $output;
+}
+
+add_shortcode('mroevents', 'query_mroevents_shortcode');
