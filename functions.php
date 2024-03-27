@@ -115,7 +115,7 @@ function custom_user_profile_fields($profileuser)
 			</td>
 		</tr>
 	</table>
-<?php
+	<?php
 }
 add_action('show_user_profile', 'custom_user_profile_fields', 10, 1);
 add_action('edit_user_profile', 'custom_user_profile_fields', 10, 1);
@@ -271,7 +271,7 @@ function query_mroevents_shortcode()
 	// WP_Query arguments to get 'mroevent' posts from today onwards
 	$args = array(
 		'post_type'      => 'mroevent', // Custom post type
-		'posts_per_page' => -1, // Retrieve all matching posts
+		'posts_per_page' => 3, // Retrieve all matching posts
 		'post_status'    => 'publish', // Only retrieve published posts
 		'meta_key'       => 'Event_Date', // Assuming you store event date in 'event_date' meta field
 		'orderby'        => 'meta_value', // Order by the date
@@ -290,23 +290,59 @@ function query_mroevents_shortcode()
 	$query = new WP_Query($args);
 
 	// Check if the query returns any posts
-	if ($query->have_posts()) {
-		$output = '<ul>';
-		while ($query->have_posts()) {
-			$query->the_post();
-			// Customize the output
-			$output .= '<li><a href="' . get_permalink() . '">' . get_the_post_thumbnail() . '</a> <a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
-		}
-		$output .= '</ul>';
-	} else {
-		// No posts found
-		$output = '<p>No upcoming events found.</p>';
-	}
+	if ($query->have_posts()) : ?>
+		<div class="et_pb_section">
+			<div class="et_pb_row">
+				<?php while ($query->have_posts()) : $query->the_post(); ?>
+					<div class="et_pb_column et_pb_column_1_3 et-last-child">
+						<div class="et_pb_module">
+							<a href="<?php echo get_permalink(); ?>">
+								<?php the_post_thumbnail('medium'); ?>
+							</a>
+							<h4><a href="<?php echo get_permalink(); ?>"><?php the_title(); ?></a></h4>
+					
+							<?php
+								// Get the event date meta value
+							$event_date_value = get_post_meta(get_the_ID(), 'Event_Date', true);
 
-	// Restore original Post Data
-	wp_reset_postdata();
+								if (!empty($event_date_value) && DateTime::createFromFormat("Y-m-d", $event_date_value) !== false) {
+									$event_date = DateTime::createFromFormat("Y-m-d", $event_date_value);
 
-	return $output;
+									if ($event_date !== false) {
+										$formattedDate = $event_date->format("j M, Y");
+										echo '<p> Event Start Date: ' . $formattedDate . '</p>';
+									} else {
+										echo '<p> Error: Invalid date format for Event_Date meta value. </p>';
+									}
+								} else {
+									echo '<p> Error: Event_Date meta value is empty or not in the correct format. </p>';
+								}
+							?>
+							
+							
+							
+						</div>
+					</div> <!-- Close column -->
+				<?php endwhile; ?>
+			</div> <!-- Close the row -->
+		</div> <!-- Close the section -->
+		<div class="pagination">
+			<?php
+			$big = 999999999; // need an unlikely integer
+			echo paginate_links(array(
+				'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
+				'format' => '?paged=%#%',
+				'current' => max(1, get_query_var('paged')),
+				'total' => $query->max_num_pages
+			));
+			?>
+		</div>
+
+	<?php else : ?>
+
+		<p>No upcoming events found.</p>
+	<?php endif; ?>
+<?php wp_reset_postdata();
 }
 
 add_shortcode('mroevents', 'query_mroevents_shortcode');
