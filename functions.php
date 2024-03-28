@@ -269,9 +269,11 @@ function query_mroevents_shortcode()
 	$today = date('Y-m-d');
 
 	// WP_Query arguments to get 'mroevent' posts from today onwards
+	$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 	$args = array(
 		'post_type'      => 'mroevent', // Custom post type
 		'posts_per_page' => 3, // Retrieve all matching posts
+		'paged'          => $paged,
 		'post_status'    => 'publish', // Only retrieve published posts
 		'meta_key'       => 'Event_Date', // Assuming you store event date in 'event_date' meta field
 		'orderby'        => 'meta_value', // Order by the date
@@ -300,27 +302,27 @@ function query_mroevents_shortcode()
 								<?php the_post_thumbnail('medium'); ?>
 							</a>
 							<h4><a href="<?php echo get_permalink(); ?>"><?php the_title(); ?></a></h4>
-					
+
 							<?php
-								// Get the event date meta value
+							// Get the event date meta value
 							$event_date_value = get_post_meta(get_the_ID(), 'Event_Date', true);
 
-								if (!empty($event_date_value) && DateTime::createFromFormat("Y-m-d", $event_date_value) !== false) {
-									$event_date = DateTime::createFromFormat("Y-m-d", $event_date_value);
+							if (!empty($event_date_value) && DateTime::createFromFormat("Y-m-d", $event_date_value) !== false) {
+								$event_date = DateTime::createFromFormat("Y-m-d", $event_date_value);
 
-									if ($event_date !== false) {
-										$formattedDate = $event_date->format("j M, Y");
-										echo '<p> Event Start Date: ' . $formattedDate . '</p>';
-									} else {
-										echo '<p> Error: Invalid date format for Event_Date meta value. </p>';
-									}
+								if ($event_date !== false) {
+									$formattedDate = $event_date->format("j M, Y");
+									echo '<p> Event Start Date: ' . $formattedDate . '</p>';
 								} else {
-									echo '<p> Error: Event_Date meta value is empty or not in the correct format. </p>';
+									echo '<p> Error: Invalid date format for Event_Date meta value. </p>';
 								}
+							} else {
+								echo '<p> Error: Event_Date meta value is empty or not in the correct format. </p>';
+							}
 							?>
-							
-							
-							
+
+
+
 						</div>
 					</div> <!-- Close column -->
 				<?php endwhile; ?>
@@ -328,11 +330,10 @@ function query_mroevents_shortcode()
 		</div> <!-- Close the section -->
 		<div class="pagination">
 			<?php
-			$big = 999999999; // need an unlikely integer
 			echo paginate_links(array(
-				'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
+				'base'    => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
 				'format' => '?paged=%#%',
-				'current' => max(1, get_query_var('paged')),
+				'current' => max(1, $paged),
 				'total' => $query->max_num_pages
 			));
 			?>
