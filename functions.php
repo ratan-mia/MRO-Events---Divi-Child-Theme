@@ -328,16 +328,21 @@ function query_mroevents_shortcode()
 				<?php endwhile; ?>
 			</div> <!-- Close the row -->
 		</div> <!-- Close the section -->
-		<div class="pagination">
-			<?php
-			echo paginate_links(array(
-				'base'    => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
-				'format' => '?paged=%#%',
-				'current' => max(1, $paged),
-				'total' => $query->max_num_pages
-			));
-			?>
-		</div>
+
+		<?php if ($query->max_num_pages > 1) { ?>
+			<div class="pagination">
+				<?php
+				echo paginate_links(array(
+					'base'    => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
+					'format' => '?paged=%#%',
+					'current' => max(1, $paged),
+					'total' => $query->max_num_pages
+				));
+				?>
+			</div>
+		<?php } ?>
+
+
 
 	<?php else : ?>
 
