@@ -1,5 +1,17 @@
 <?php
 
+
+// function my_custom_module() {
+//     if(class_exists("ET_Builder_Module")){
+//         include("blog-module.php");
+//     }
+// }
+// add_action('et_builder_ready', 'my_custom_module');
+
+
+
+
+
 add_action('wp_enqueue_scripts', 'my_enqueue_assets');
 
 function my_enqueue_assets()
@@ -352,3 +364,28 @@ function query_mroevents_shortcode()
 }
 
 add_shortcode('mroevents', 'query_mroevents_shortcode');
+
+// Extend the Divi Blog module
+
+
+function dd_random_posts($query, $args) {
+	$timezone_string = get_option('timezone_string');
+	$today = date('Y-m-d');
+
+	if (isset($args['module_id']) && $args['module_id'] === 'mro-latest-events') {
+		$query->query_vars['orderby'] = 'meta_value';
+		$query->query_vars['order'] = 'ASC';
+		$query->query_vars['meta_key'] = 'Event_Date';
+		$query->query_vars['meta_query'] = array(
+			array(
+				'key'     => 'Event_Date',
+				'value'   => $today,
+				'compare' => '>=', // Greater than or equal to today
+				'type'    => 'DATE', // Type of the custom field (date)
+			),
+		);
+		$query = new WP_Query( $query->query_vars );
+	}
+	return $query;
+}
+add_filter('et_builder_blog_query', 'dd_random_posts', 10, 2);
