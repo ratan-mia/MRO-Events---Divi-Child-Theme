@@ -368,7 +368,7 @@ add_shortcode('mroevents', 'query_mroevents_shortcode');
 // Extend the Divi Blog module
 
 
-function dd_random_posts($query, $args) {
+function modify_divi_et_builder_blog_query($query, $args) {
 	$timezone_string = get_option('timezone_string');
 	$today = date('Y-m-d');
 
@@ -388,4 +388,4 @@ function dd_random_posts($query, $args) {
 	}
 	return $query;
 }
-add_filter('et_builder_blog_query', 'dd_random_posts', 10, 2);
+add_filter('et_builder_blog_query', 'modify_divi_et_builder_blog_query', 10, 2);
