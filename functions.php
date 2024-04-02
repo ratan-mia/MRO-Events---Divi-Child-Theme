@@ -439,3 +439,99 @@ function mro_events_populate_columns_data( $column_name, $post_id ) {
 
 }
 
+
+
+// quick_edit_custom_box allows to add HTML in Quick Edit
+add_action( 'quick_edit_custom_box',  'mro_events_quick_edit_fields', 10, 2 );
+
+function mro_events_quick_edit_fields( $column_name, $post_type ) {
+
+	switch( $column_name ) {
+		case 'Event_Date': {
+			global $post;
+			$event_date = get_post_meta( $post->ID, 'Event_Date', true );
+			?>
+				<fieldset class="inline-edit-col-left">
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Event Date</span>
+							<input type="text" name="Event_Date" value="<?php echo esc_attr( $event_date ); ?>" placeholder="<?php echo esc_attr( $event_date ); ?>">
+						</label>
+					</div>
+				<?php
+			break;
+		}
+		case 'Event_Venue_City': {
+			global $post;
+			$event_venue_city = get_post_meta( $post->ID, 'Event_Venue_City', true );
+			?>
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Event Venue City</span>
+							<input type="text" name="Event_Venue_City" value="<?php echo esc_attr( $event_venue_city ); ?>" placeholder="<?php echo esc_attr( $event_venue_city ); ?>">
+						</label>
+					</div>
+				</fieldset>
+			<?php
+			break;
+		}
+	}
+}
+
+// save fields after quick edit
+add_action( 'save_post_mroevent', 'mro_events_quick_edit_save' );
+
+function mro_events_quick_edit_save( $post_id ){
+
+	// check inline edit nonce
+	if ( ! wp_verify_nonce( $_POST[ '_inline_edit' ], 'inlineeditnonce' ) ) {
+		return;
+	}
+
+	// update the event date
+	$event_date = ! empty( $_POST[ 'Event_Date' ] ) ? sanitize_text_field( $_POST[ 'Event_Date' ] ) : '';
+ 	update_post_meta( $post_id, 'Event_Date', $event_date );
+
+	// update the event venue city
+	$event_venue_city = ! empty( $_POST[ 'Event_Venue_City' ] ) ? sanitize_text_field( $_POST[ 'Event_Venue_City' ] ) : '';
+	update_post_meta( $post_id, 'Event_Venue_City', $event_venue_city );
+
+}
+
+
+add_action( 'admin_footer', 'customize_inline_edit_for_mroevent' );
+
+function customize_inline_edit_for_mroevent() {
+    ?>
+    <script>
+    jQuery(function($) {
+
+        const wp_inline_edit_function = inlineEditPost.edit;
+
+        // we overwrite it with our own
+        inlineEditPost.edit = function(post_id) {
+
+            // let's merge arguments of the original function
+            wp_inline_edit_function.apply(this, arguments);
+
+            // get the post ID from the argument
+            if (typeof(post_id) == 'object') { // if it is object, get the ID number
+                post_id = parseInt(this.getId(post_id));
+            }
+
+            // add rows to variables
+            const edit_row = $('#edit-' + post_id);
+            const post_row = $('#post-' + post_id);
+
+            // Get the values of Event_Date and Event_Venue_City
+            const eventDate = $('.column-Event_Date', post_row).text();
+            const eventVenueCity = $('.column-Event_Venue_City', post_row).text();
+
+            // populate the inputs with column data
+            $(':input[name="Event_Date"]', edit_row).val(eventDate);
+            $(':input[name="Event_Venue_City"]', edit_row).val(eventVenueCity);
+        }
+    });
+    </script>
+    <?php
+}
