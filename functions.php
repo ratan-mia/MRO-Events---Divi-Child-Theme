@@ -389,3 +389,53 @@ function modify_divi_et_builder_blog_query($query, $args) {
 	return $query;
 }
 add_filter('et_builder_blog_query', 'modify_divi_et_builder_blog_query', 10, 2);
+
+
+// function custom_child_theme_setup() {
+//     // Adjust the path as needed
+//     get_template_part( 'child-next-blog-carousel.php' );
+// }
+// add_action( 'et_builder_ready', 'custom_child_theme_setup' );
+
+function my_custom_module() {
+    if(class_exists("ET_Builder_Module")){
+        include("child-next-blog-carousel.php");
+    }
+}
+add_action('et_builder_ready', 'my_custom_module');
+
+// Add New Column to the MRO Event Post Type
+// add new columns
+add_filter( 'manage_mroevent_posts_columns', 'misha_price_and_featured_columns' );
+// the above hook will add columns only for default 'post' post type, for CPT:
+// manage_{POST TYPE NAME}_posts_columns
+function misha_price_and_featured_columns( $column_array ) {
+
+	$column_array[ 'Event_Date' ] = 'Event Date';
+	$column_array[ 'Event_Venue_City' ] = 'Event Venue City';
+	// the above code will add columns at the end of the array
+	// if you want columns to be added in another order, use array_slice()
+
+	return $column_array;
+}
+
+// Populate our new columns with data
+add_action( 'manage_mroevent_posts_custom_column', 'mro_events_populate_columns_data', 10, 2 );
+function mro_events_populate_columns_data( $column_name, $post_id ) {
+
+	// if you have to populate more than one column, use switch()
+	switch( $column_name ) {
+		case 'Event_Date': {
+			$event_date = get_post_meta( $post_id, 'Event_Date', true );
+			echo $event_date ? $event_date : '';
+			break;
+		}
+		case 'Event_Venue_City': {
+			$event_venu_city = get_post_meta( $post_id, 'Event_Venue_City', true );
+			echo $event_venu_city ? $event_venu_city : '';
+			break;
+		}
+	}
+
+}
+
