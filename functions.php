@@ -1,5 +1,7 @@
+
 <?php
 
+// use function get_adjacent_post;
 
 // function my_custom_module() {
 //     if(class_exists("ET_Builder_Module")){
@@ -406,13 +408,16 @@ add_action('et_builder_ready', 'my_custom_module');
 
 // Add New Column to the MRO Event Post Type
 // add new columns
-add_filter( 'manage_mroevent_posts_columns', 'misha_price_and_featured_columns' );
+add_filter( 'manage_mroevent_posts_columns', 'mroevents_custom_posts_columns' );
 // the above hook will add columns only for default 'post' post type, for CPT:
 // manage_{POST TYPE NAME}_posts_columns
-function misha_price_and_featured_columns( $column_array ) {
+function mroevents_custom_posts_columns( $column_array ) {
 
 	$column_array[ 'Event_Date' ] = 'Event Date';
 	$column_array[ 'Event_Venue_City' ] = 'Event Venue City';
+	$column_array[ 'dnxte_popup-active' ] = 'Popup Active';
+	$column_array[ 'Event_Link' ] = 'Event Link';
+	
 	// the above code will add columns at the end of the array
 	// if you want columns to be added in another order, use array_slice()
 
@@ -435,6 +440,17 @@ function mro_events_populate_columns_data( $column_name, $post_id ) {
 			echo $event_venu_city ? $event_venu_city : '';
 			break;
 		}
+		case 'dnxte_popup-active': {
+			$popup_active = get_post_meta( $post_id, 'dnxte_popup-active', true );
+			echo $popup_active ? $popup_active : '';
+			break;
+		}
+		case 'Event_Link': {
+			$event_link = get_post_meta( $post_id, 'Event_Link', true );
+			echo $event_link ? $event_link : '';
+			break;
+		}
+		
 	}
 
 }
@@ -454,20 +470,23 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 				<fieldset class="inline-edit-col-left">
 					<div class="inline-edit-col">
 						<label>
-							<span class="title">Event Date</span>
+							<span class="title">Date</span>
 							<input type="text" name="Event_Date" value="<?php echo esc_attr( $event_date ); ?>" placeholder="<?php echo esc_attr( $event_date ); ?>">
 						</label>
 					</div>
-				<?php
+				</fieldset>
+			<?php
 			break;
 		}
+
 		case 'Event_Venue_City': {
 			global $post;
 			$event_venue_city = get_post_meta( $post->ID, 'Event_Venue_City', true );
 			?>
+				<fieldset class="inline-edit-col-left">
 					<div class="inline-edit-col">
 						<label>
-							<span class="title">Event Venue City</span>
+							<span class="title">Venue</span>
 							<input type="text" name="Event_Venue_City" value="<?php echo esc_attr( $event_venue_city ); ?>" placeholder="<?php echo esc_attr( $event_venue_city ); ?>">
 						</label>
 					</div>
@@ -475,6 +494,41 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 			<?php
 			break;
 		}
+		// Do for Event_Link
+		case 'Event_Link': {
+			global $post;
+			$event_link = get_post_meta( $post->ID, 'Event_Link', true );
+			?>
+				<fieldset class="inline-edit-col-left">
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Link</span>
+							<input type="text" name="Event_Link" value="<?php echo esc_attr( $event_link ); ?>" placeholder="<?php echo esc_attr( $event_link ); ?>">
+						</label>
+					</div>
+				</fieldset>
+			<?php
+			break;
+		}
+
+
+		case 'dnxte_popup-active': {
+			global $post;
+			$popup_active = get_post_meta( $post->ID, 'dnxte_popup-active', true );
+			?>
+				<fieldset class="inline-edit-col-left">
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Popup</span>
+							<input type="text" name="dnxte_popup-active" value="<?php echo esc_attr( $popup_active ); ?>" placeholder="<?php echo esc_attr( $popup_active ); ?>">
+						</label>
+					</div>
+				</fieldset>
+			<?php
+			break;
+		}
+
+
 	}
 }
 
@@ -495,6 +549,16 @@ function mro_events_quick_edit_save( $post_id ){
 	// update the event venue city
 	$event_venue_city = ! empty( $_POST[ 'Event_Venue_City' ] ) ? sanitize_text_field( $_POST[ 'Event_Venue_City' ] ) : '';
 	update_post_meta( $post_id, 'Event_Venue_City', $event_venue_city );
+
+	// update the event link
+	$event_link = ! empty( $_POST[ 'Event_Link' ] ) ? sanitize_text_field( $_POST[ 'Event_Link' ] ) : '';
+	update_post_meta( $post_id, 'Event_Link', $event_link );
+
+	// update the popup active
+	$popup_active = ! empty( $_POST[ 'dnxte_popup-active' ] ) ? sanitize_text_field( $_POST[ 'dnxte_popup-active' ] ) : '';
+	update_post_meta( $post_id, 'dnxte_popup-active', $popup_active );
+
+
 
 }
 
@@ -526,12 +590,62 @@ function customize_inline_edit_for_mroevent() {
             // Get the values of Event_Date and Event_Venue_City
             const eventDate = $('.column-Event_Date', post_row).text();
             const eventVenueCity = $('.column-Event_Venue_City', post_row).text();
+			const eventLink = $('.column-Event_Link', post_row).text();
+			const popupActive = $('.column-dnxte_popup-active', post_row).text();
+
 
             // populate the inputs with column data
             $(':input[name="Event_Date"]', edit_row).val(eventDate);
             $(':input[name="Event_Venue_City"]', edit_row).val(eventVenueCity);
+			$(':input[name="Event_Link"]', edit_row).val(eventLink);
+			$(':input[name="dnxte_popup-active"]', edit_row).val(popupActive);
+
         }
     });
     </script>
     <?php
+}
+
+
+
+
+// Filter the previous post link
+add_filter( 'previous_post_link', 'custom_previous_post_link', 10, 5 );
+function custom_previous_post_link( $output, $format, $link, $post, $adjacent ) {
+	if ( 'mroevent' !== $post->post_type ) {
+		return $output;
+	}
+
+	// Get the previous post based on Event_Date
+	$previous_post = get_adjacent_post( false, '', $adjacent, 'Event_Date' );
+
+	// If there's a previous post
+	if ( $previous_post ) {
+		// Get the link to the previous post
+		$previous_post_link = get_permalink( $previous_post->ID );
+		// Modify the output format as needed
+		$output = sprintf( $format, $link, $previous_post_link, $previous_post->post_title );
+	}
+
+	return $output;
+}
+
+add_filter( 'next_post_link', 'custom_next_post_link', 10, 5 );
+function custom_next_post_link( $output, $format, $link, $post, $adjacent ) {
+	if ( 'mroevent' !== $post->post_type ) {
+		return $output;
+	}
+
+	// Get the next post based on Event_Date
+	$next_post = get_adjacent_post( false, '', $adjacent, 'Event_Date' );
+
+	// If there's a next post
+	if ( $next_post ) {
+		// Get the link to the next post
+		$next_post_link = get_permalink( $next_post->ID );
+		// Modify the output format as needed
+		$output = sprintf( $format, $link, $next_post_link, $next_post->post_title );
+	}
+
+	return $output;
 }
