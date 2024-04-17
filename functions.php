@@ -479,6 +479,34 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 			break;
 		}
 
+
+		case 'Event_End_Date': {
+			global $post;
+			$event_end_date = get_post_meta( $post->ID, 'Event_End_Date', true );
+			?>
+				<fieldset class="inline-edit-col-left">
+					<div class="inline-edit-col">
+						<label>
+							<span class="title">Date</span>
+							<input type="text" name="Event_End_Date" value="<?php echo esc_attr( $event_end_date ); ?>" placeholder="<?php echo esc_attr( $event_end_date ); ?>">
+						</label>
+					</div>
+				</fieldset>
+			<?php
+			break;
+		}
+
+
+		
+
+		
+
+
+
+
+		
+
+
 		case 'Event_Venue_City': {
 			global $post;
 			$event_venue_city = get_post_meta( $post->ID, 'Event_Venue_City', true );
@@ -546,6 +574,11 @@ function mro_events_quick_edit_save( $post_id ){
 	$event_date = ! empty( $_POST[ 'Event_Date' ] ) ? sanitize_text_field( $_POST[ 'Event_Date' ] ) : '';
  	update_post_meta( $post_id, 'Event_Date', $event_date );
 
+
+	// update the event end date
+	$event_end_date = ! empty( $_POST[ 'Event_End_Date' ] ) ? sanitize_text_field( $_POST[ 'Event_End_Date' ] ) : '';
+ 	update_post_meta( $post_id, 'Event_End_Date', $event_end_date );
+
 	// update the event venue city
 	$event_venue_city = ! empty( $_POST[ 'Event_Venue_City' ] ) ? sanitize_text_field( $_POST[ 'Event_Venue_City' ] ) : '';
 	update_post_meta( $post_id, 'Event_Venue_City', $event_venue_city );
@@ -589,6 +622,7 @@ function customize_inline_edit_for_mroevent() {
 
             // Get the values of Event_Date and Event_Venue_City
             const eventDate = $('.column-Event_Date', post_row).text();
+			const eventEndDate = $('.column-Event_End_Date', post_row).text();
             const eventVenueCity = $('.column-Event_Venue_City', post_row).text();
 			const eventLink = $('.column-Event_Link', post_row).text();
 			const popupActive = $('.column-dnxte_popup-active', post_row).text();
@@ -596,6 +630,7 @@ function customize_inline_edit_for_mroevent() {
 
             // populate the inputs with column data
             $(':input[name="Event_Date"]', edit_row).val(eventDate);
+			$(':input[name="Event_End_Date"]', edit_row).val(eventEndDate);
             $(':input[name="Event_Venue_City"]', edit_row).val(eventVenueCity);
 			$(':input[name="Event_Link"]', edit_row).val(eventLink);
 			$(':input[name="dnxte_popup-active"]', edit_row).val(popupActive);
@@ -605,6 +640,17 @@ function customize_inline_edit_for_mroevent() {
     </script>
     <?php
 }
+
+// Remove the Category from the Quick Edit
+
+add_filter( 'quick_edit_show_taxonomy', function( $show, $taxonomy_name, $view ) {
+
+    if ( 'mroevent_category' == $taxonomy_name )
+        return false;
+
+    return $show;
+}, 10, 3 );
+
 
 
 
@@ -617,7 +663,7 @@ function custom_previous_post_link( $output, $format, $link, $post, $adjacent ) 
 	}
 
 	// Get the previous post based on Event_Date
-	$previous_post = get_adjacent_post( false, '', $adjacent, 'Event_Date' );
+	$previous_post = get_adjacent_post( false, '', $adjacent, '', 'meta_key=Event_Date' );
 
 	// If there's a previous post
 	if ( $previous_post ) {
@@ -636,8 +682,8 @@ function custom_next_post_link( $output, $format, $link, $post, $adjacent ) {
 		return $output;
 	}
 
-	// Get the next post based on Event_Date
-	$next_post = get_adjacent_post( false, '', $adjacent, 'Event_Date' );
+	// Get the next post based on custom meta field (e.g., 'Event_Date')
+	$next_post = get_adjacent_post( false, '', $adjacent, '', 'meta_key=Event_Date' );
 
 	// If there's a next post
 	if ( $next_post ) {
