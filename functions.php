@@ -414,6 +414,7 @@ add_filter( 'manage_mroevent_posts_columns', 'mroevents_custom_posts_columns' );
 function mroevents_custom_posts_columns( $column_array ) {
 
 	$column_array[ 'Event_Date' ] = 'Event Date';
+	$column_array[ 'Event_End_Date' ] = 'Event End Date';
 	$column_array[ 'Event_Venue_City' ] = 'Event Venue City';
 	$column_array[ 'dnxte_popup-active' ] = 'Popup Active';
 	$column_array[ 'Event_Link' ] = 'Event Link';
@@ -435,6 +436,13 @@ function mro_events_populate_columns_data( $column_name, $post_id ) {
 			echo $event_date ? $event_date : '';
 			break;
 		}
+
+		case 'Event_End_Date': {
+			$event_end_date = get_post_meta( $post_id, 'Event_End_Date', true );
+			echo $event_end_date ? $event_end_date : '';
+			break;
+		}
+
 		case 'Event_Venue_City': {
 			$event_venu_city = get_post_meta( $post_id, 'Event_Venue_City', true );
 			echo $event_venu_city ? $event_venu_city : '';
@@ -479,7 +487,6 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 			break;
 		}
 
-
 		case 'Event_End_Date': {
 			global $post;
 			$event_end_date = get_post_meta( $post->ID, 'Event_End_Date', true );
@@ -487,7 +494,7 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 				<fieldset class="inline-edit-col-left">
 					<div class="inline-edit-col">
 						<label>
-							<span class="title">Date</span>
+							<span class="title">Event End Date</span>
 							<input type="text" name="Event_End_Date" value="<?php echo esc_attr( $event_end_date ); ?>" placeholder="<?php echo esc_attr( $event_end_date ); ?>">
 						</label>
 					</div>
@@ -495,16 +502,6 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 			<?php
 			break;
 		}
-
-
-		
-
-		
-
-
-
-
-		
 
 
 		case 'Event_Venue_City': {
