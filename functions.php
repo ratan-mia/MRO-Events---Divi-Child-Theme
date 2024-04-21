@@ -416,7 +416,7 @@ function mroevents_custom_posts_columns( $column_array ) {
 	$column_array[ 'Event_Date' ] = 'Event Date';
 	$column_array[ 'Event_End_Date' ] = 'Event End Date';
 	$column_array[ 'Event_Venue_City' ] = 'Event Venue City';
-	$column_array[ 'dnxte_popup-active' ] = 'Popup Active';
+	// $column_array[ 'dnxte_popup-active' ] = 'Popup Active';
 	$column_array[ 'Event_Link' ] = 'Event Link';
 	
 	// the above code will add columns at the end of the array
@@ -448,11 +448,11 @@ function mro_events_populate_columns_data( $column_name, $post_id ) {
 			echo $event_venu_city ? $event_venu_city : '';
 			break;
 		}
-		case 'dnxte_popup-active': {
-			$popup_active = get_post_meta( $post_id, 'dnxte_popup-active', true );
-			echo $popup_active ? $popup_active : '';
-			break;
-		}
+		// case 'dnxte_popup-active': {
+		// 	$popup_active = get_post_meta( $post_id, 'dnxte_popup-active', true );
+		// 	echo $popup_active ? $popup_active : '';
+		// 	break;
+		// }
 		case 'Event_Link': {
 			$event_link = get_post_meta( $post_id, 'Event_Link', true );
 			echo $event_link ? $event_link : '';
@@ -537,21 +537,21 @@ function mro_events_quick_edit_fields( $column_name, $post_type ) {
 		}
 
 
-		case 'dnxte_popup-active': {
-			global $post;
-			$popup_active = get_post_meta( $post->ID, 'dnxte_popup-active', true );
-			?>
-				<fieldset class="inline-edit-col-left">
-					<div class="inline-edit-col">
-						<label>
-							<span class="title">Popup</span>
-							<input type="text" name="dnxte_popup-active" value="<?php echo esc_attr( $popup_active ); ?>" placeholder="<?php echo esc_attr( $popup_active ); ?>">
-						</label>
-					</div>
-				</fieldset>
-			<?php
-			break;
-		}
+		// case 'dnxte_popup-active': {
+		// 	global $post;
+		// 	$popup_active = get_post_meta( $post->ID, 'dnxte_popup-active', true );
+		// 	?>
+		// 		<fieldset class="inline-edit-col-left">
+		// 			<div class="inline-edit-col">
+		// 				<label>
+		// 					<span class="title">Popup</span>
+		// 					<input type="text" name="dnxte_popup-active" value="<?php echo esc_attr( $popup_active ); ?>" placeholder="<?php echo esc_attr( $popup_active ); ?>">
+		// 				</label>
+		// 			</div>
+		// 		</fieldset>
+		// 	<?php
+		// 	break;
+		// }
 
 
 	}
@@ -585,8 +585,8 @@ function mro_events_quick_edit_save( $post_id ){
 	update_post_meta( $post_id, 'Event_Link', $event_link );
 
 	// update the popup active
-	$popup_active = ! empty( $_POST[ 'dnxte_popup-active' ] ) ? sanitize_text_field( $_POST[ 'dnxte_popup-active' ] ) : '';
-	update_post_meta( $post_id, 'dnxte_popup-active', $popup_active );
+	// $popup_active = ! empty( $_POST[ 'dnxte_popup-active' ] ) ? sanitize_text_field( $_POST[ 'dnxte_popup-active' ] ) : '';
+	// update_post_meta( $post_id, 'dnxte_popup-active', $popup_active );
 
 
 
@@ -624,7 +624,7 @@ function customize_inline_edit_for_mroevent() {
 			const eventEndDate = $('.column-Event_End_Date', post_row).text();
             const eventVenueCity = $('.column-Event_Venue_City', post_row).text();
 			const eventLink = $('.column-Event_Link', post_row).text();
-			const popupActive = $('.column-dnxte_popup-active', post_row).text();
+			// const popupActive = $('.column-dnxte_popup-active', post_row).text();
 
 
             // populate the inputs with column data
@@ -632,7 +632,7 @@ function customize_inline_edit_for_mroevent() {
 			$(':input[name="Event_End_Date"]', edit_row).val(eventEndDate);
             $(':input[name="Event_Venue_City"]', edit_row).val(eventVenueCity);
 			$(':input[name="Event_Link"]', edit_row).val(eventLink);
-			$(':input[name="dnxte_popup-active"]', edit_row).val(popupActive);
+			// $(':input[name="dnxte_popup-active"]', edit_row).val(popupActive);
 
         }
     });
