@@ -593,6 +593,8 @@ function mro_events_quick_edit_save( $post_id ){
 }
 
 
+
+
 add_action( 'admin_footer', 'customize_inline_edit_for_mroevent' );
 
 function customize_inline_edit_for_mroevent() {
@@ -647,6 +649,164 @@ add_filter( 'quick_edit_show_taxonomy', function( $show, $taxonomy_name, $view )
 
     return $show;
 }, 10, 3 );
+
+
+
+
+
+
+// Add custom thumbnail column only for 'mroevent' custom post type
+add_filter( 'manage_mroevent_posts_columns', 'mro_event_add_thumbnail_column' );
+function mro_event_add_thumbnail_column( $columns ) {
+    // Check if current post type is 'mroevent'
+    if ( get_post_type() === 'mroevent' ) {
+        $columns['featured_image'] = 'Featured Image';
+    }
+    return $columns;
+}
+
+
+// Display custom thumbnail column content
+add_action( 'manage_mroevent_posts_custom_column', 'mro_event_post_thumbnail_column', 10, 2 );
+function mro_event_post_thumbnail_column( $column_name, $post_id ) {
+    if( 'featured_image' === $column_name ) {
+        // if there is no featured image for this post, print the placeholder
+        if( has_post_thumbnail( $post_id ) ) {
+            // Get featured image ID
+            $id = get_post_thumbnail_id( $post_id );
+            // Get image URL
+            $url = esc_url( wp_get_attachment_image_url( $id ) );
+            // Output the image with data-id attribute
+            ?><img data-id="<?php echo $id ?>" src="<?php echo $url ?>" /><?php
+        } else {
+            // Output placeholder image with data-id attribute as -1
+            ?><img data-id="-1" src="placeholder-image.png" /><?php
+        }
+    }
+}
+
+
+// Media Uploding Script to the post page
+
+add_action( 'admin_enqueue_scripts', 'mro_event_include_myuploadscript' );
+function mro_event_include_myuploadscript() {
+	if ( ! did_action( 'wp_enqueue_media' ) ) {
+		wp_enqueue_media();
+	}
+}
+
+
+add_action( 'quick_edit_custom_box',  'mro_events_featured_image_quick_edit', 10, 2 );
+function mro_events_featured_image_quick_edit( $column_name, $post_type ) {
+
+	// add it only if we have featured image column
+	if( 'featured_image' !== $column_name ){
+		return;
+	}
+	?>
+		<fieldset id="misha_featured_image" class="inline-edit-col-left">
+			<div class="inline-edit-col">
+				<span class="title">Featured Image</span>
+				<div>
+					<a href="#" class="button mro-event-upload-img">Set featured image</a>
+					<input type="hidden" name="_thumbnail_id" value="" />
+				</div>
+				<a href="#" class="mro-event-remove-img">Remove Featured Image</a>
+			</div>
+		</fieldset>
+		<?php
+}
+
+
+add_action( 'admin_footer', 'mro_event_quick_edit_media_upload' );
+
+function mro_event_quick_edit_media_upload() {
+    ?>
+    <script>
+jQuery(function($){
+
+	// add image
+	$('body').on( 'click', '.mro-event-upload-img', function( event ) {
+		event.preventDefault();
+
+		const button = $(this);
+		const customUploader = wp.media({
+			title: 'Set featured image',
+			library : { type : 'image' },
+			button: { text: 'Set featured image' },
+		}).on( 'select', () => {
+			const attachment = customUploader.state().get('selection').first().toJSON();
+			button.removeClass('button').html( '<img src="' + attachment.url + '" />').next().val(attachment.id).parent().next().show();
+		}).open();
+
+	});
+
+	// remove image
+
+	$('body').on('click', '.mro-event-remove-img', function( event ) {
+		event.preventDefault();
+		$(this).hide().prev().find( '[name="_thumbnail_id"]').val('-1').prev().html('Set featured Image').addClass('button' );
+	});
+
+	const $wp_inline_edit = inlineEditPost.edit;
+
+	inlineEditPost.edit = function( id ) {
+		$wp_inline_edit.apply( this, arguments );
+		let postId = 0;
+		if( typeof( id ) == 'object' ) {
+			postId = parseInt( this.getId( id ) );
+		}
+
+		if ( postId > 0 ) {
+			const editRow = $( '#edit-' + postId )
+			const postRow = $( '#post-' + postId )
+			const featuredImage = $( '.column-featured_image', postRow ).html()
+			const featuredImageId = $( '.column-featured_image', postRow ).find('img').data('id')
+
+			if( featuredImageId != -1 ) {
+
+				$( ':input[name="_thumbnail_id"]', editRow ).val( featuredImageId ); // ID
+				$( '.mro-event-upload-img', editRow ).html( featuredImage ).removeClass( 'button' ); // image HTML
+				$( '.mro-event-remove-img', editRow ).show(); // the remove link
+
+			}
+		}
+	}
+});
+
+
+</script>
+    <?php
+}
+
+
+
+
+
+// Add excerpt field to quick edit
+
+function add_excerpt_to_quick_edit($column_name, $post_type) {
+    // Check if the column is 'post_excerpt' and the post type is 'post'
+    if ($column_name === 'post_excerpt' && $post_type === 'mroevent') {
+        // Get the current post ID
+        $post_id = get_the_ID();
+        // Get the excerpt for the post
+        $excerpt = get_the_excerpt($post_id);
+        // Output the excerpt field
+        ?>
+        <fieldset class="inline-edit-col-right">
+            <div class="inline-edit-col">
+                <label class="inline-edit-group">
+                    <span class="title"><?php _e('Excerpt'); ?></span>
+                    <textarea cols="20" rows="2" name="excerpt" class="pt-excerpt"><?php echo esc_textarea($excerpt); ?></textarea>
+                </label>
+            </div>
+        </fieldset>
+        <?php
+    }
+}
+add_action('quick_edit_custom_box', 'add_excerpt_to_quick_edit', 10, 2);
+
 
 
 

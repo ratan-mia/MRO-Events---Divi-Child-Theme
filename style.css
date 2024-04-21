@@ -254,3 +254,13 @@ article.type-page h2, .page-header-wrapper h2{font-size:38px !important;line-hei
 @media only screen and ( min-width: 1406px ) {
 
 }
+
+
+/* CSS for Custom thubnail column */
+
+
+td.featured_image.column-featured_image img{
+    width:120px;
+	max-width: 100%;
+	height: auto;
+}
